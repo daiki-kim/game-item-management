@@ -1,15 +1,21 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
+	"game-item-management/controllers"
+	"game-item-management/repositories"
+	"game-item-management/services"
 )
 
-func TestRouter() *gin.Engine {
-	r := gin.Default()
-	r.GET("/test", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "connected"})
-	})
-	return r
+func SetupRouter(db *gorm.DB, router *gin.Engine) {
+	userRepository := repositories.NewUserRepository(db)
+	userService := services.NewUserService(userRepository)
+	userController := controllers.NewUserController(userService)
+
+	userRoutes := router.Group("/user")
+	{
+		userRoutes.POST("/signup", userController.SignUp)
+	}
 }

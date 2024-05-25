@@ -11,9 +11,7 @@ import (
 	"game-item-management/models"
 )
 
-var DB *gorm.DB
-
-func ConnectDatabase() {
+func ConnectDatabase() (db *gorm.DB) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_NAME"),
@@ -32,4 +30,5 @@ func ConnectDatabase() {
 	if err != nil {
 		log.Fatalf("Error migrating database:%s", err.Error())
 	}
+	return db
 }

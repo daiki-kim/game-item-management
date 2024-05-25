@@ -5,6 +5,7 @@ import (
 	"game-item-management/routes"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -13,8 +14,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err.Error())
 	}
-	config.ConnectDatabase()
+	db := config.ConnectDatabase()
 
-	r := routes.TestRouter()
-	r.Run("localhost:8080")
+	router := gin.Default()
+	routes.SetupRouter(db, router)
+	router.Run("localhost:8080")
 }

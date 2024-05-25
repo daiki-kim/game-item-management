@@ -6,6 +6,6 @@ type Item struct {
 	gorm.Model
 	Name        string `gorm:"not null"`
 	Description string
-	UserID      uint
+	UserID      uint `gorm:"not null"`
 	User        User `gorm:"foreignKey:UserID"`
 }

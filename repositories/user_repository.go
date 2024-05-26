@@ -9,6 +9,7 @@ import (
 type IUserRepository interface {
 	CreateNewUser(newUser *models.User) error
 	FindByEmail(email string) (*models.User, error)
+	FindByName(name string) (*[]models.User, error)
 }
 
 type UserRepository struct {
@@ -34,4 +35,13 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		return nil, result.Error
 	}
 	return &foundUser, nil
+}
+
+func (r *UserRepository) FindByName(name string) (*[]models.User, error) {
+	var foundUsers []models.User
+	result := r.db.Find(&foundUsers, "name = ?", name)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &foundUsers, nil
 }

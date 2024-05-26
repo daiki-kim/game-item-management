@@ -15,6 +15,7 @@ import (
 type IUserService interface {
 	Signup(inputUser dtos.SignupUserDTO) error
 	Login(email string, password string) (*string, error)
+	GetUsersProfile(name string) (*[]models.User, error)
 	GetUserFromToken(tokenString string) (*models.User, error)
 }
 
@@ -33,9 +34,10 @@ func (s *UserService) Signup(inputUser dtos.SignupUserDTO) error {
 	}
 
 	newUser := models.User{
-		Name:     inputUser.Name,
-		Email:    inputUser.Email,
-		Password: string(hasshedPassword),
+		Name:        inputUser.Name,
+		Email:       inputUser.Email,
+		Password:    string(hasshedPassword),
+		Description: inputUser.Description,
 	}
 
 	err = s.repository.CreateNewUser(&newUser)
@@ -62,9 +64,9 @@ func CreateToken(userId uint, email string) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":   userId,
 		"email": email,
-		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+		"exp":   time.Now().Add(time.Hour * 72).Unix(),
 	})
-	tokenString, err := token.SignedString([]byte("SECRET_KEY"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
 		return nil, err
 	}
@@ -78,12 +80,15 @@ func (s *UserService) GetUserFromToken(tokenString string) (*models.User, error)
 		}
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
-	if err != nil {
-		return nil, err
+
+	if err != nil || !token.Valid {
+		fmt.Printf("Invalid token: %v\n", err)
+		return nil, fmt.Errorf("invalid token: %v", err)
 	}
 
 	var gotUser *models.User
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			return nil, jwt.ErrTokenExpired
 		}
@@ -93,5 +98,17 @@ func (s *UserService) GetUserFromToken(tokenString string) (*models.User, error)
 			return nil, err
 		}
 	}
+	fmt.Printf("Token: %s\n", tokenString)
+	fmt.Printf("Parsed Token: %+v\n", token)
+	fmt.Printf("Claims: %+v\n", claims)
+
 	return gotUser, nil
+}
+
+func (s *UserService) GetUsersProfile(name string) (*[]models.User, error) {
+	foundUsers, err := s.repository.FindByName(name)
+	if err != nil {
+		return nil, err
+	}
+	return foundUsers, nil
 }

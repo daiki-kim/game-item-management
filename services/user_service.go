@@ -4,7 +4,9 @@ import (
 	"game-item-management/dtos"
 	"game-item-management/models"
 	"game-item-management/repositories"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,5 +52,18 @@ func (s *UserService) Login(email string, password string) (*string, error) {
 		return nil, err
 	}
 
-	return &foundUser.Email, nil // TODO: Change to token after creating Token generate func
+	return CreateToken(foundUser.ID, foundUser.Email)
+}
+
+func CreateToken(userId uint, email string) (*string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   userId,
+		"email": email,
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+	})
+	tokenString, err := token.SignedString([]byte("SECRET_KEY"))
+	if err != nil {
+		return nil, err
+	}
+	return &tokenString, nil
 }

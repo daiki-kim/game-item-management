@@ -18,6 +18,7 @@ type IUserService interface {
 	GetUsersProfile(name string) (*[]models.User, error)
 	GetUserFromToken(tokenString string) (*models.User, error)
 	FindUserById(userId uint) (*models.User, error)
+	UpdateUserProfile(updateUserId uint, inputUser dtos.UpdateUserDTO) error
 }
 
 type UserService struct {
@@ -41,7 +42,7 @@ func (s *UserService) Signup(inputUser dtos.SignupUserDTO) error {
 		Description: inputUser.Description,
 	}
 
-	err = s.repository.CreateNewUser(&newUser)
+	err = s.repository.CreateNewUser(newUser)
 	if err != nil {
 		return err
 	}
@@ -116,4 +117,21 @@ func (s *UserService) GetUsersProfile(name string) (*[]models.User, error) {
 
 func (s *UserService) FindUserById(userId uint) (*models.User, error) {
 	return s.repository.FindById(userId)
+}
+
+func (s *UserService) UpdateUserProfile(updateUserId uint, inputUser dtos.UpdateUserDTO) error {
+	targetUser, err := s.FindUserById(updateUserId)
+	if err != nil {
+		return err
+	}
+	if inputUser.Name != nil {
+		targetUser.Name = *inputUser.Name
+	}
+	if inputUser.Email != nil {
+		targetUser.Email = *inputUser.Email
+	}
+	if inputUser.Description != nil {
+		targetUser.Description = *inputUser.Description
+	}
+	return s.repository.Update(*targetUser)
 }

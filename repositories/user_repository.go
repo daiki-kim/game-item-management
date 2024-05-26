@@ -8,10 +8,11 @@ import (
 )
 
 type IUserRepository interface {
-	CreateNewUser(newUser *models.User) error
+	CreateNewUser(newUser models.User) error
 	FindByEmail(email string) (*models.User, error)
 	FindByName(name string) (*[]models.User, error)
 	FindById(userId uint) (*models.User, error)
+	Update(updateUser models.User) error
 }
 
 type UserRepository struct {
@@ -22,7 +23,7 @@ func NewUserRepository(db *gorm.DB) IUserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) CreateNewUser(newUser *models.User) error {
+func (r *UserRepository) CreateNewUser(newUser models.User) error {
 	result := r.db.Create(&newUser)
 	if result.Error != nil {
 		return result.Error
@@ -55,4 +56,12 @@ func (r *UserRepository) FindById(userId uint) (*models.User, error) {
 		return nil, errors.New("user not found")
 	}
 	return &foundUser, nil
+}
+
+func (r *UserRepository) Update(updateUser models.User) error {
+	result := r.db.Save(updateUser)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

@@ -16,6 +16,7 @@ type IUserController interface {
 	Login(c *gin.Context)
 	GetUsersProfile(c *gin.Context)
 	GetUserById(c *gin.Context)
+	UpdateUserProfile(c *gin.Context)
 }
 
 type UserController struct {
@@ -34,7 +35,7 @@ func (c *UserController) Signup(ctx *gin.Context) {
 	}
 
 	if err := c.service.Signup(newUserInput); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
 		return
 	}
 
@@ -50,7 +51,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 
 	userToken, err := c.service.Login(userInput.Email, userInput.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
 		return
 	}
 
@@ -76,7 +77,7 @@ func (c *UserController) GetUsersProfile(ctx *gin.Context) {
 	}
 	users, err := c.service.GetUsersProfile(userNameInput.Name)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
 		return
 	}
 	if users == nil {
@@ -110,8 +111,33 @@ func (c *UserController) GetUserById(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"user": gotUser})
+}
+
+func (c *UserController) UpdateUserProfile(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	modelsUser, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	updateUserId := modelsUser.ID
+
+	var updateUser dtos.UpdateUserDTO
+	if err := ctx.ShouldBindJSON(&updateUser); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := c.service.UpdateUserProfile(updateUserId, updateUser); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.Status(http.StatusOK)
 }

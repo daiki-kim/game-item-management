@@ -17,3 +17,9 @@ type LoginUserDTO struct {
 type GetUsersDTO struct {
 	Name string `json:"name" binding:"required"`
 }
+
+type UpdateUserDTO struct {
+	Name        *string `json:"name" binding:"omitnil"`
+	Email       *string `json:"email" binding:"omitnil,email"`
+	Description *string `json:"description" binding:"omitnil"`
+}

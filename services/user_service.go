@@ -9,7 +9,8 @@ import (
 )
 
 type IUserService interface {
-	SignUp(inputUser dtos.CreateUserDTO) error
+	Signup(inputUser dtos.SignupUserDTO) error
+	Login(email string, password string) (*string, error)
 }
 
 type UserService struct {
@@ -20,7 +21,7 @@ func NewUserService(repository repositories.IUserRepository) IUserService {
 	return &UserService{repository: repository}
 }
 
-func (s *UserService) SignUp(inputUser dtos.CreateUserDTO) error {
+func (s *UserService) Signup(inputUser dtos.SignupUserDTO) error {
 	hasshedPassword, err := bcrypt.GenerateFromPassword([]byte(inputUser.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -37,4 +38,17 @@ func (s *UserService) SignUp(inputUser dtos.CreateUserDTO) error {
 		return err
 	}
 	return nil
+}
+
+func (s *UserService) Login(email string, password string) (*string, error) {
+	foundUser, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(password)); err != nil {
+		return nil, err
+	}
+
+	return &foundUser.Email, nil // TODO: Change to token after creating Token generate func
 }

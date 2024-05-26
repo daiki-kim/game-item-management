@@ -17,6 +17,7 @@ type IUserService interface {
 	Login(email string, password string) (*string, error)
 	GetUsersProfile(name string) (*[]models.User, error)
 	GetUserFromToken(tokenString string) (*models.User, error)
+	FindUserById(userId uint) (*models.User, error)
 }
 
 type UserService struct {
@@ -111,4 +112,8 @@ func (s *UserService) GetUsersProfile(name string) (*[]models.User, error) {
 		return nil, err
 	}
 	return foundUsers, nil
+}
+
+func (s *UserService) FindUserById(userId uint) (*models.User, error) {
+	return s.repository.FindById(userId)
 }

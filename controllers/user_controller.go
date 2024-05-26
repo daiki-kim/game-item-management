@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"game-item-management/dtos"
 	"game-item-management/models"
@@ -14,6 +15,7 @@ type IUserController interface {
 	Signup(c *gin.Context)
 	Login(c *gin.Context)
 	GetUsersProfile(c *gin.Context)
+	GetUserById(c *gin.Context)
 }
 
 type UserController struct {
@@ -83,4 +85,33 @@ func (c *UserController) GetUsersProfile(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"users": users})
+}
+
+func (c *UserController) GetUserById(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	userId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	gotUser, err := c.service.FindUserById(uint(userId))
+	if err != nil {
+		if err.Error() == "user not found" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"user": gotUser})
 }

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"game-item-management/models"
 
 	"gorm.io/gorm"
@@ -10,6 +11,7 @@ type IUserRepository interface {
 	CreateNewUser(newUser *models.User) error
 	FindByEmail(email string) (*models.User, error)
 	FindByName(name string) (*[]models.User, error)
+	FindById(userId uint) (*models.User, error)
 }
 
 type UserRepository struct {
@@ -44,4 +46,13 @@ func (r *UserRepository) FindByName(name string) (*[]models.User, error) {
 		return nil, result.Error
 	}
 	return &foundUsers, nil
+}
+
+func (r *UserRepository) FindById(userId uint) (*models.User, error) {
+	var foundUser models.User
+	result := r.db.First(&foundUser, userId)
+	if result.Error != nil {
+		return nil, errors.New("user not found")
+	}
+	return &foundUser, nil
 }

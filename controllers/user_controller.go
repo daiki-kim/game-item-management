@@ -17,6 +17,7 @@ type IUserController interface {
 	GetUsersProfile(c *gin.Context)
 	GetUserById(c *gin.Context)
 	UpdateUserProfile(c *gin.Context)
+	DeleteUser(c *gin.Context)
 }
 
 type UserController struct {
@@ -136,6 +137,26 @@ func (c *UserController) UpdateUserProfile(ctx *gin.Context) {
 		return
 	}
 	if err := c.service.UpdateUserProfile(updateUserId, updateUser); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+func (c *UserController) DeleteUser(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	modelsUser, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	deleteUserId := modelsUser.ID
+
+	if err := c.service.DeleteUser(deleteUserId); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
 		return
 	}

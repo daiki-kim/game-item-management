@@ -13,6 +13,7 @@ type IUserRepository interface {
 	FindByName(name string) (*[]models.User, error)
 	FindById(userId uint) (*models.User, error)
 	Update(updateUser models.User) error
+	Delete(userId uint) error
 }
 
 type UserRepository struct {
@@ -60,6 +61,14 @@ func (r *UserRepository) FindById(userId uint) (*models.User, error) {
 
 func (r *UserRepository) Update(updateUser models.User) error {
 	result := r.db.Save(updateUser)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (r *UserRepository) Delete(userId uint) error {
+	result := r.db.Delete(&models.User{}, userId)
 	if result.Error != nil {
 		return result.Error
 	}

@@ -19,6 +19,7 @@ type IUserService interface {
 	GetUserFromToken(tokenString string) (*models.User, error)
 	FindUserById(userId uint) (*models.User, error)
 	UpdateUserProfile(updateUserId uint, inputUser dtos.UpdateUserDTO) error
+	DeleteUser(userId uint) error
 }
 
 type UserService struct {
@@ -134,4 +135,8 @@ func (s *UserService) UpdateUserProfile(updateUserId uint, inputUser dtos.Update
 		targetUser.Description = *inputUser.Description
 	}
 	return s.repository.Update(*targetUser)
+}
+
+func (s *UserService) DeleteUser(userId uint) error {
+	return s.repository.Delete(userId)
 }

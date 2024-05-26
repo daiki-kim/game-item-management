@@ -23,4 +23,5 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	userRoutesWithAuth.POST("/profile", userController.GetUsersProfile)
 	userRoutesWithAuth.GET("/profile/:id", userController.GetUserById)
 	userRoutesWithAuth.PUT("/profile/update", userController.UpdateUserProfile)
+	userRoutesWithAuth.DELETE("/delete", userController.DeleteUser)
 }

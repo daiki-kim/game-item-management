@@ -1,18 +1,21 @@
 package services
 
 import (
+	"fmt"
 	"game-item-management/dtos"
 	"game-item-management/models"
 	"game-item-management/repositories"
+	"os"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type IUserService interface {
 	Signup(inputUser dtos.SignupUserDTO) error
 	Login(email string, password string) (*string, error)
+	GetUserFromToken(tokenString string) (*models.User, error)
 }
 
 type UserService struct {
@@ -66,4 +69,29 @@ func CreateToken(userId uint, email string) (*string, error) {
 		return nil, err
 	}
 	return &tokenString, nil
+}
+
+func (s *UserService) GetUserFromToken(tokenString string) (*models.User, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method:%v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var gotUser *models.User
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			return nil, jwt.ErrTokenExpired
+		}
+
+		gotUser, err = s.repository.FindByEmail(claims["email"].(string))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return gotUser, nil
 }

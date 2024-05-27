@@ -43,11 +43,7 @@ func (s *UserService) Signup(inputUser dtos.SignupUserDTO) error {
 		Description: inputUser.Description,
 	}
 
-	err = s.repository.CreateNewUser(newUser)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.repository.CreateNewUser(newUser)
 }
 
 func (s *UserService) Login(email string, password string) (*string, error) {

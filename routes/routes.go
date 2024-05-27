@@ -24,4 +24,13 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	userRoutesWithAuth.GET("/profile/:id", userController.GetUserById)
 	userRoutesWithAuth.PUT("/profile/update", userController.UpdateUserProfile)
 	userRoutesWithAuth.DELETE("/delete", userController.DeleteUser)
+
+	itemRepository := repositories.NewItemRepository(db)
+	itemService := services.NewItemService(itemRepository)
+	itemController := controllers.NewItemController(itemService)
+
+	// itemRoutes := router.Group("/item")
+	itemRoutesWithAuth := router.Group("/item", middlewares.AuthMiddleware(userService))
+
+	itemRoutesWithAuth.POST("/create", itemController.CreateItem)
 }

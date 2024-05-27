@@ -11,6 +11,7 @@ import (
 
 type IItemController interface {
 	CreateItem(ctx *gin.Context)
+	FindAllItems(ctx *gin.Context)
 }
 
 type ItemController struct {
@@ -45,4 +46,13 @@ func (c *ItemController) CreateItem(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusCreated, createdItem)
+}
+
+func (c *ItemController) FindAllItems(ctx *gin.Context) {
+	foundItems, err := c.service.FindAllItems()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": foundItems})
 }

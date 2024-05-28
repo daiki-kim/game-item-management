@@ -13,6 +13,7 @@ type IItemRepository interface {
 	FindItemById(itemId uint) (*models.Item, error)
 	FindMyItemById(itemId, userId uint) (*models.Item, error)
 	UpdateItem(updateItem models.Item) (*models.Item, error)
+	DeleteItem(itemId, userId uint) error
 }
 
 type ItemRepository struct {
@@ -64,4 +65,12 @@ func (r *ItemRepository) UpdateItem(updateItem models.Item) (*models.Item, error
 		return nil, result.Error
 	}
 	return &updateItem, nil
+}
+
+func (r *ItemRepository) DeleteItem(itemId, userId uint) error {
+	result := r.db.Where("id = ? AND user_id = ?", itemId, userId).Delete(&models.Item{})
+	if result.Error != nil {
+		return errors.New("item not found")
+	}
+	return nil
 }

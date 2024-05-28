@@ -15,6 +15,7 @@ type IItemController interface {
 	FindAllItems(ctx *gin.Context)
 	FindItemById(ctx *gin.Context)
 	UpdateItem(ctx *gin.Context)
+	DeleteItem(ctx *gin.Context)
 }
 
 type ItemController struct {
@@ -111,4 +112,33 @@ func (c *ItemController) UpdateItem(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": updatedItem})
+}
+
+func (c *ItemController) DeleteItem(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	modelsUser, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	userId := modelsUser.ID
+
+	itemId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
+		return
+	}
+	if err := c.service.DeleteItem(uint(itemId), userId); err != nil {
+		if err.Error() == "item not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.Status(http.StatusOK)
 }

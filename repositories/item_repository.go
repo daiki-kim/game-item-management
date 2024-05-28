@@ -11,6 +11,7 @@ type IItemRepository interface {
 	CreateNewItem(newItem models.Item) (*models.Item, error)
 	FindAllItems() (*[]models.Item, error)
 	FindItemById(itemId uint) (*models.Item, error)
+	UpdateItem(updateItem models.Item) (*models.Item, error)
 }
 
 type ItemRepository struct {
@@ -45,4 +46,12 @@ func (r *ItemRepository) FindItemById(itemId uint) (*models.Item, error) {
 		return nil, errors.New("item not found")
 	}
 	return &foundItem, nil
+}
+
+func (r *ItemRepository) UpdateItem(updateItem models.Item) (*models.Item, error) {
+	result := r.db.Save(&updateItem)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &updateItem, nil
 }

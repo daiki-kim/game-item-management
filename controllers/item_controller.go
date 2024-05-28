@@ -79,6 +79,18 @@ func (c *ItemController) FindItemById(ctx *gin.Context) {
 }
 
 func (c *ItemController) UpdateItem(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	modelsUser, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	userId := modelsUser.ID
+
 	itemId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
@@ -89,7 +101,7 @@ func (c *ItemController) UpdateItem(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	updatedItem, err := c.service.UpdateItem(uint(itemId), inputItem)
+	updatedItem, err := c.service.UpdateItem(uint(itemId), userId, inputItem)
 	if err != nil {
 		if err.Error() == "item not found" {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

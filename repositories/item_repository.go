@@ -11,6 +11,7 @@ type IItemRepository interface {
 	CreateNewItem(newItem models.Item) (*models.Item, error)
 	FindAllItems() (*[]models.Item, error)
 	FindItemById(itemId uint) (*models.Item, error)
+	FindMyItemById(itemId, userId uint) (*models.Item, error)
 	UpdateItem(updateItem models.Item) (*models.Item, error)
 }
 
@@ -42,6 +43,15 @@ func (r *ItemRepository) FindAllItems() (*[]models.Item, error) {
 func (r *ItemRepository) FindItemById(itemId uint) (*models.Item, error) {
 	var foundItem models.Item
 	result := r.db.First(&foundItem, itemId)
+	if result.Error != nil {
+		return nil, errors.New("item not found")
+	}
+	return &foundItem, nil
+}
+
+func (r *ItemRepository) FindMyItemById(itemId, userId uint) (*models.Item, error) {
+	var foundItem models.Item
+	result := r.db.Where("id = ? AND user_id = ?", itemId, userId).First(&foundItem)
 	if result.Error != nil {
 		return nil, errors.New("item not found")
 	}

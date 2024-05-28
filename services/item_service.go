@@ -10,7 +10,7 @@ type IItemService interface {
 	CreateNewItem(inputItem dtos.NewItemDTO, userId uint) (*models.Item, error)
 	FindAllItems() (*[]models.Item, error)
 	FindItemById(itemId uint) (*models.Item, error)
-	UpdateItem(itemId uint, inputItem dtos.UpdateItemDTO) (*models.Item, error)
+	UpdateItem(itemId, userId uint, inputItem dtos.UpdateItemDTO) (*models.Item, error)
 }
 
 type ItemService struct {
@@ -38,8 +38,8 @@ func (s *ItemService) FindItemById(itemId uint) (*models.Item, error) {
 	return s.repository.FindItemById(itemId)
 }
 
-func (s *ItemService) UpdateItem(itemId uint, inputItem dtos.UpdateItemDTO) (*models.Item, error) {
-	targetItem, err := s.repository.FindItemById(itemId)
+func (s *ItemService) UpdateItem(itemId, userId uint, inputItem dtos.UpdateItemDTO) (*models.Item, error) {
+	targetItem, err := s.repository.FindMyItemById(itemId, userId)
 	if err != nil {
 		return nil, err
 	}

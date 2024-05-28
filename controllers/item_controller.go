@@ -5,6 +5,7 @@ import (
 	"game-item-management/models"
 	"game-item-management/services"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +13,7 @@ import (
 type IItemController interface {
 	CreateItem(ctx *gin.Context)
 	FindAllItems(ctx *gin.Context)
+	FindItemById(ctx *gin.Context)
 }
 
 type ItemController struct {
@@ -55,4 +57,22 @@ func (c *ItemController) FindAllItems(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"data": foundItems})
+}
+
+func (c *ItemController) FindItemById(ctx *gin.Context) {
+	itemId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid item id"})
+		return
+	}
+	foundItem, err := c.service.FindItemById(uint(itemId))
+	if err != nil {
+		if err.Error() == "item not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"data": foundItem})
 }

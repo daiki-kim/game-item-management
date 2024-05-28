@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"game-item-management/models"
 
 	"gorm.io/gorm"
@@ -9,6 +10,7 @@ import (
 type IItemRepository interface {
 	CreateNewItem(newItem models.Item) (*models.Item, error)
 	FindAllItems() (*[]models.Item, error)
+	FindItemById(itemId uint) (*models.Item, error)
 }
 
 type ItemRepository struct {
@@ -34,4 +36,13 @@ func (r *ItemRepository) FindAllItems() (*[]models.Item, error) {
 		return nil, result.Error
 	}
 	return &foundItems, nil
+}
+
+func (r *ItemRepository) FindItemById(itemId uint) (*models.Item, error) {
+	var foundItem models.Item
+	result := r.db.First(&foundItem, itemId)
+	if result.Error != nil {
+		return nil, errors.New("item not found")
+	}
+	return &foundItem, nil
 }

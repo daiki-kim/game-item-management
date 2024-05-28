@@ -33,6 +33,7 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	itemRoutesWithAuth := router.Group("/item", middlewares.AuthMiddleware(userService))
 
 	itemRoutes.GET("/all", itemController.FindAllItems)
+	itemRoutes.GET("/find/:id", itemController.FindItemById)
 	itemRoutesWithAuth.POST("/create", itemController.CreateItem)
 
 }

@@ -14,6 +14,7 @@ type IItemRepository interface {
 	FindMyItemById(itemId, userId uint) (*models.Item, error)
 	UpdateItem(updateItem models.Item) (*models.Item, error)
 	DeleteItem(itemId, userId uint) error
+	FindMyAllItems(userId uint) (*[]models.Item, error)
 }
 
 type ItemRepository struct {
@@ -73,4 +74,13 @@ func (r *ItemRepository) DeleteItem(itemId, userId uint) error {
 		return errors.New("item not found")
 	}
 	return nil
+}
+
+func (r *ItemRepository) FindMyAllItems(userId uint) (*[]models.Item, error) {
+	var foundItems []models.Item
+	result := r.db.Find(&foundItems, "user_id = ?", userId)
+	if result.Error != nil {
+		return nil, errors.New("item not found")
+	}
+	return &foundItems, nil
 }

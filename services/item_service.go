@@ -12,6 +12,7 @@ type IItemService interface {
 	FindItemById(itemId uint) (*models.Item, error)
 	UpdateItem(itemId, userId uint, inputItem dtos.UpdateItemDTO) (*models.Item, error)
 	DeleteItem(itemId, userId uint) error
+	FindMyAllItems(userId uint) (*[]models.Item, error)
 }
 
 type ItemService struct {
@@ -55,4 +56,8 @@ func (s *ItemService) UpdateItem(itemId, userId uint, inputItem dtos.UpdateItemD
 
 func (s *ItemService) DeleteItem(itemId, userId uint) error {
 	return s.repository.DeleteItem(itemId, userId)
+}
+
+func (s *ItemService) FindMyAllItems(userId uint) (*[]models.Item, error) {
+	return s.repository.FindMyAllItems(userId)
 }

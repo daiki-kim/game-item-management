@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"game-item-management/models"
 	"game-item-management/repositories"
 )
@@ -21,7 +22,7 @@ func NewTradeService(itemRepository repositories.IItemRepository, tradeRepositor
 func (s *TradeService) CreateNewTrade(itemId, toUserId uint) (*models.Trade, error) {
 	item, err := s.itemRepository.FindItemById(itemId)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("item not found")
 	}
 
 	trade := models.Trade{

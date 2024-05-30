@@ -14,10 +14,10 @@ type ITradeController interface {
 }
 
 type TradeController struct {
-	service services.TradeService
+	service services.ITradeService
 }
 
-func NewTradeController(service services.TradeService) ITradeController {
+func NewTradeController(service services.ITradeService) ITradeController {
 	return &TradeController{service: service}
 }
 

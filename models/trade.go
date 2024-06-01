@@ -1,14 +1,12 @@
 package models
 
-import "gorm.io/gorm"
-
 type Trade struct {
-	gorm.Model
+	ID          uint `gorm:"primaryKey"`
 	Is_Accepted bool
-	ItemID      uint `gorm:"not null"`
-	FromUserID  uint `gorm:"not null"`
-	ToUserID    uint `gorm:"not null"`
-	Item        Item `gorm:"foreignKey:ItemID"`
-	FromUser    User `gorm:"foreignKey:FromUserID"`
-	ToUser      User `gorm:"foreignKey:ToUserID"`
+	ItemID      uint `gorm:"not null;foreignKey:ItemID"`
+	FromUserID  uint `gorm:"not null;foreignKey:FromUserID"`
+	ToUserID    uint `gorm:"not null;foreignKey:ToUserID"`
+	// Item        Item `gorm:"foreignKey:ItemID"`
+	// FromUser    User `gorm:"foreignKey:FromUserID"`
+	// ToUser      User `gorm:"foreignKey:ToUserID"`
 }

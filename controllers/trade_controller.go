@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"game-item-management/dtos"
 	"game-item-management/models"
 	"game-item-management/services"
 	"net/http"
@@ -11,6 +12,8 @@ import (
 
 type ITradeController interface {
 	CreateNewTrade(ctx *gin.Context)
+	FindTradeByTradeId(ctx *gin.Context)
+	UpdateTradeStatus(ctx *gin.Context)
 }
 
 type TradeController struct {
@@ -49,4 +52,71 @@ func (c *TradeController) CreateNewTrade(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusCreated, newItemTrade)
+}
+
+func (c *TradeController) FindTradeByTradeId(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	tradeId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid trade id"})
+		return
+	}
+	foundTrade, err := c.service.FindTradeByTradeId(uint(tradeId))
+	if err != nil {
+		if err.Error() == "trade not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, foundTrade)
+}
+
+func (c *TradeController) UpdateTradeStatus(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	modelsUser, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	userId := modelsUser.ID
+
+	var inputTrade dtos.UpdateTradeDTO
+	if err := ctx.ShouldBindJSON(&inputTrade); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tradeId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid trade id"})
+		return
+	}
+	updateTrade, err := c.service.UpdateTradeStatus(uint(tradeId), userId, inputTrade)
+	if err != nil {
+		switch err.Error() {
+		case "trade not found":
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case "you are not the owner of this trade":
+			ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		default:
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		}
+		return
+	}
+	ctx.JSON(http.StatusOK, updateTrade)
 }

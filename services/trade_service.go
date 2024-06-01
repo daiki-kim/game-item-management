@@ -65,5 +65,30 @@ func (s *TradeService) FindTradeByTradeId(tradeId uint) (*models.Trade, error) {
 }
 
 func (s *TradeService) UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.UpdateTradeDTO) (*models.Trade, error) {
-	panic("")
+	targetTrade, err := s.tradeRepository.FindTradeByTradeId(tradeId)
+	if err != nil {
+		return nil, err
+	}
+	if targetTrade.FromUserID != userId {
+		return nil, errors.New("you are not the owner of this trade")
+	}
+
+	targetTrade.Is_Accepted = inputTrade.Is_Accepted
+	targetItem, err := s.itemRepository.FindItemById(targetTrade.ItemID)
+	if err != nil {
+		return nil, err
+	}
+	var subject, body string
+	if inputTrade.Is_Accepted {
+		subject = "Trade request is accepted"
+		body = fmt.Sprintf("Trade request is accepted. You got %s", targetItem.Name)
+	} else {
+		subject = "Trade request is rejected"
+		body = fmt.Sprintf("Trade request is accepted. You missed %s", targetItem.Name)
+	}
+	toUser, _ := s.userRepository.FindById(targetTrade.ToUserID)
+	s.emailService.SendEmail(toUser.Email, subject, body)
+	log.Printf("email sent to %s.\nsubject: %s\nbody: %s", toUser.Email, subject, body)
+
+	return s.tradeRepository.UpdateTrade(*targetTrade)
 }

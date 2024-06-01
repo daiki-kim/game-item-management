@@ -111,7 +111,7 @@ func (c *TradeController) UpdateTradeStatus(ctx *gin.Context) {
 		switch err.Error() {
 		case "trade not found":
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		case "you are not owner of this trade":
+		case "you are not the owner of this trade":
 			ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		default:
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})

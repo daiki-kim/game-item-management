@@ -14,6 +14,7 @@ type ITradeService interface {
 	CreateNewTrade(itemId, toUserId uint) (*models.Trade, error)
 	FindTradeByTradeId(tradeId uint) (*models.Trade, error)
 	UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.UpdateTradeDTO) (*models.Trade, error)
+	FindAllTradesByItemId(itemId uint) (*[]models.Trade, error)
 }
 
 type TradeService struct {
@@ -91,4 +92,8 @@ func (s *TradeService) UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.U
 	log.Printf("email sent to %s.\nsubject: %s\nbody: %s", toUser.Email, subject, body)
 
 	return s.tradeRepository.UpdateTrade(*targetTrade)
+}
+
+func (s *TradeService) FindAllTradesByItemId(itemId uint) (*[]models.Trade, error) {
+	return s.tradeRepository.FindAllTradesByItemId(itemId)
 }

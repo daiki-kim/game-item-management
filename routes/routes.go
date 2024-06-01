@@ -41,6 +41,7 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	tradeController := controllers.NewTradeController(tradeService)
 	tradeRoutesWithAuth := router.Group("/trade", middlewares.AuthMiddleware(userService))
 	tradeRoutesWithAuth.GET("/find/:id", tradeController.FindTradeByTradeId)
+	tradeRoutesWithAuth.GET("/all/by/item/:id", tradeController.FindAllTradesByItemId)
 	tradeRoutesWithAuth.POST("/create/:id", tradeController.CreateNewTrade)
 	tradeRoutesWithAuth.PUT("/update/status/:id", tradeController.UpdateTradeStatus)
 }

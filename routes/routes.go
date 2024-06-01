@@ -35,8 +35,9 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	itemRoutesWithAuth.DELETE("/delete/:id", itemController.DeleteItem)
 	itemRoutesWithAuth.GET("/user/all", itemController.FindMyAllItems)
 
+	emailService := services.NewEmailService()
 	tradeRepository := repositories.NewTradeRepository(db)
-	tradeService := services.NewTradeService(itemRepository, tradeRepository)
+	tradeService := services.NewTradeService(itemRepository, tradeRepository, userRepository, emailService)
 	tradeController := controllers.NewTradeController(tradeService)
 	// tradeRoutes := router.Group("/trade")
 	tradeRoutesWithAuth := router.Group("/trade", middlewares.AuthMiddleware(userService))

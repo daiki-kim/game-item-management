@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"game-item-management/models"
 	"game-item-management/repositories"
+	"log"
 )
 
 type ITradeService interface {
@@ -18,8 +19,18 @@ type TradeService struct {
 	emailService    IEmailService
 }
 
-func NewTradeService(itemRepository repositories.IItemRepository, tradeRepository repositories.ITradeRepository) ITradeService {
-	return &TradeService{itemRepository: itemRepository, tradeRepository: tradeRepository}
+func NewTradeService(
+	itemRepository repositories.IItemRepository,
+	tradeRepository repositories.ITradeRepository,
+	userRepository repositories.IUserRepository,
+	emailService IEmailService,
+) ITradeService {
+	return &TradeService{
+		itemRepository:  itemRepository,
+		tradeRepository: tradeRepository,
+		userRepository:  userRepository,
+		emailService:    emailService,
+	}
 }
 
 func (s *TradeService) CreateNewTrade(itemId, toUserId uint) (*models.Trade, error) {
@@ -41,6 +52,7 @@ func (s *TradeService) CreateNewTrade(itemId, toUserId uint) (*models.Trade, err
 	subject := fmt.Sprintf("Trade request from %s", toUser.Name)
 	body := fmt.Sprintf("Trade request from %s. Please accept or decline.", toUser.Name)
 	s.emailService.SendEmail(fromUser.Email, subject, body)
+	log.Printf("email sent to %s.\nsubject: %s\nbody: %s", fromUser.Email, subject, body)
 
 	return newTrade, nil
 }

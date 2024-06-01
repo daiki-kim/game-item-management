@@ -11,6 +11,7 @@ import (
 
 type ITradeController interface {
 	CreateNewTrade(ctx *gin.Context)
+	FindTradeByTradeId(ctx *gin.Context)
 }
 
 type TradeController struct {
@@ -49,4 +50,33 @@ func (c *TradeController) CreateNewTrade(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusCreated, newItemTrade)
+}
+
+func (c *TradeController) FindTradeByTradeId(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	tradeId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid trade id"})
+		return
+	}
+	foundTrade, err := c.service.FindTradeByTradeId(uint(tradeId))
+	if err != nil {
+		if err.Error() == "trade not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, foundTrade)
 }

@@ -3,13 +3,17 @@ package services
 import (
 	"errors"
 	"fmt"
+	"log"
+
+	"game-item-management/dtos"
 	"game-item-management/models"
 	"game-item-management/repositories"
-	"log"
 )
 
 type ITradeService interface {
 	CreateNewTrade(itemId, toUserId uint) (*models.Trade, error)
+	FindTradeByTradeId(tradeId uint) (*models.Trade, error)
+	UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.UpdateTradeDTO) (*models.Trade, error)
 }
 
 type TradeService struct {
@@ -39,10 +43,9 @@ func (s *TradeService) CreateNewTrade(itemId, toUserId uint) (*models.Trade, err
 		return nil, errors.New("item not found")
 	}
 	trade := models.Trade{
-		Is_Accepted: false,
-		ItemID:      itemId,
-		FromUserID:  item.UserID,
-		ToUserID:    toUserId,
+		ItemID:     itemId,
+		FromUserID: item.UserID,
+		ToUserID:   toUserId,
 	}
 	newTrade, _ := s.tradeRepository.CreateNewTrade(trade)
 
@@ -55,4 +58,12 @@ func (s *TradeService) CreateNewTrade(itemId, toUserId uint) (*models.Trade, err
 	log.Printf("email sent to %s.\nsubject: %s\nbody: %s", fromUser.Email, subject, body)
 
 	return newTrade, nil
+}
+
+func (s *TradeService) FindTradeByTradeId(tradeId uint) (*models.Trade, error) {
+	return s.tradeRepository.FindTradeByTradeId(tradeId)
+}
+
+func (s *TradeService) UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.UpdateTradeDTO) (*models.Trade, error) {
+	panic("")
 }

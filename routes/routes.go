@@ -14,10 +14,8 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	userRepository := repositories.NewUserRepository(db)
 	userService := services.NewUserService(userRepository)
 	userController := controllers.NewUserController(userService)
-
 	userRoutes := router.Group("/user")
 	userRoutesWithAuth := router.Group("/user", middlewares.AuthMiddleware(userService))
-
 	userRoutes.POST("/signup", userController.Signup)
 	userRoutes.POST("/login", userController.Login)
 	userRoutesWithAuth.POST("/profile", userController.GetUsersProfile)
@@ -28,14 +26,20 @@ func SetupRouter(db *gorm.DB, router *gin.Engine) {
 	itemRepository := repositories.NewItemRepository(db)
 	itemService := services.NewItemService(itemRepository)
 	itemController := controllers.NewItemController(itemService)
-
 	itemRoutes := router.Group("/item")
 	itemRoutesWithAuth := router.Group("/item", middlewares.AuthMiddleware(userService))
-
 	itemRoutes.GET("/all", itemController.FindAllItems)
 	itemRoutes.GET("/find/:id", itemController.FindItemById)
 	itemRoutesWithAuth.POST("/create", itemController.CreateItem)
 	itemRoutesWithAuth.PUT("/update/:id", itemController.UpdateItem)
 	itemRoutesWithAuth.DELETE("/delete/:id", itemController.DeleteItem)
 	itemRoutesWithAuth.GET("/user/all", itemController.FindMyAllItems)
+
+	emailService := services.NewEmailService()
+	tradeRepository := repositories.NewTradeRepository(db)
+	tradeService := services.NewTradeService(itemRepository, tradeRepository, userRepository, emailService)
+	tradeController := controllers.NewTradeController(tradeService)
+	// tradeRoutes := router.Group("/trade")
+	tradeRoutesWithAuth := router.Group("/trade", middlewares.AuthMiddleware(userService))
+	tradeRoutesWithAuth.POST("/create/:id", tradeController.CreateNewTrade)
 }

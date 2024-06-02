@@ -15,6 +15,7 @@ type ITradeService interface {
 	FindTradeByTradeId(tradeId uint) (*models.Trade, error)
 	UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.UpdateTradeDTO) (*models.Trade, error)
 	FindAllTradesByItemId(itemId uint) (*[]models.Trade, error)
+	FindAllTradesByUserId(userId uint) (*[]models.Trade, error)
 }
 
 type TradeService struct {
@@ -96,4 +97,8 @@ func (s *TradeService) UpdateTradeStatus(tradeId, userId uint, inputTrade dtos.U
 
 func (s *TradeService) FindAllTradesByItemId(itemId uint) (*[]models.Trade, error) {
 	return s.tradeRepository.FindAllTradesByItemId(itemId)
+}
+
+func (s *TradeService) FindAllTradesByUserId(userId uint) (*[]models.Trade, error) {
+	return s.tradeRepository.FindAllTradesByUserId(userId)
 }

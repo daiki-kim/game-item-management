@@ -15,6 +15,7 @@ type ITradeController interface {
 	FindTradeByTradeId(ctx *gin.Context)
 	UpdateTradeStatus(ctx *gin.Context)
 	FindAllTradesByItemId(ctx *gin.Context)
+	FindAllTradesByUserId(ctx *gin.Context)
 }
 
 type TradeController struct {
@@ -141,7 +142,36 @@ func (c *TradeController) FindAllTradesByItemId(ctx *gin.Context) {
 	}
 	foundTrades, err := c.service.FindAllTradesByItemId(uint(itemId))
 	if err != nil {
-		if err.Error() == "item not found" {
+		if err.Error() == "trades not found" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "unexpected error"})
+		return
+	}
+	ctx.JSON(http.StatusOK, foundTrades)
+}
+
+func (c *TradeController) FindAllTradesByUserId(ctx *gin.Context) {
+	user, exist := ctx.Get("user")
+	if !exist {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
+	userId, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	foundTrades, err := c.service.FindAllTradesByUserId(uint(userId))
+	if err != nil {
+		if err.Error() == "trades not found" {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}

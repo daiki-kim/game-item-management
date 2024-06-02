@@ -12,6 +12,7 @@ type ITradeRepository interface {
 	FindTradeByTradeId(tradeId uint) (*models.Trade, error)
 	UpdateTrade(trade models.Trade) (*models.Trade, error)
 	FindAllTradesByItemId(itemId uint) (*[]models.Trade, error)
+	FindAllTradesByUserId(userId uint) (*[]models.Trade, error)
 }
 
 type TradeRepository struct {
@@ -50,6 +51,15 @@ func (r *TradeRepository) UpdateTrade(trade models.Trade) (*models.Trade, error)
 func (r *TradeRepository) FindAllTradesByItemId(itemId uint) (*[]models.Trade, error) {
 	var foundTrades []models.Trade
 	result := r.db.Where("item_id = ?", itemId).Find(&foundTrades)
+	if result.Error != nil {
+		return nil, errors.New("trades not found")
+	}
+	return &foundTrades, nil
+}
+
+func (r *TradeRepository) FindAllTradesByUserId(userId uint) (*[]models.Trade, error) {
+	var foundTrades []models.Trade
+	result := r.db.Where("to_user_id = ? OR from_user_id = ?", userId, userId).Find(&foundTrades)
 	if result.Error != nil {
 		return nil, errors.New("trades not found")
 	}
